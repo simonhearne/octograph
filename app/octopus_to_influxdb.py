@@ -38,7 +38,8 @@ def store_series(connection, series, metrics, rate_data):
         point['valid_to']: point['value_inc_vat']
         for point in agile_data
     }
-
+    #print("\n\nRates:\n")
+    #print(agile_rates)
     def active_rate_field(measurement):
         if series == 'gas':
             return 'unit_rate'
@@ -94,6 +95,11 @@ def store_series(connection, series, metrics, rate_data):
             })
         return fields
 
+    def fields_for_rate(rate):
+        #print("\n\nrate:\n")
+        #print(agile_rates[rate])
+        return {'agile_rate': agile_rates[rate]}
+
     def tags_for_measurement(measurement):
         period = maya.parse(measurement['interval_end'])
         time = period.datetime().strftime('%H:%M')
@@ -102,6 +108,17 @@ def store_series(connection, series, metrics, rate_data):
             'time_of_day': time,
         }
 
+    if (series == 'electricity'):
+       rates = [
+            {
+                'measurement': series,
+                'time': rate,
+                'fields': fields_for_rate(rate)
+            }
+            for rate in agile_rates
+        ]
+       connection.write_points(rates)
+       #print(rates)
     measurements = [
         {
             'measurement': series,
@@ -111,6 +128,7 @@ def store_series(connection, series, metrics, rate_data):
         }
         for measurement in metrics
     ]
+    #print(measurements)
     connection.write_points(measurements)
 
 
@@ -120,8 +138,8 @@ def store_series(connection, series, metrics, rate_data):
     default="octograph.ini",
     type=click.Path(exists=True, dir_okay=True, readable=True),
 )
-@click.option('--from-date', default='yesterday midnight', type=click.STRING)
-@click.option('--to-date', default='today midnight', type=click.STRING)
+@click.option('--from-date', default='today midnight', type=click.STRING)
+@click.option('--to-date', default='tomorrow midnight', type=click.STRING)
 def cmd(config_file, from_date, to_date):
 
     config = ConfigParser()
