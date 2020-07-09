@@ -138,7 +138,7 @@ def store_series(connection, series, metrics, rate_data):
     default="octograph.ini",
     type=click.Path(exists=True, dir_okay=True, readable=True),
 )
-@click.option('--from-date', default='today midnight', type=click.STRING)
+@click.option('--from-date', default='yesterday midnight', type=click.STRING)
 @click.option('--to-date', default='tomorrow midnight', type=click.STRING)
 def cmd(config_file, from_date, to_date):
 
